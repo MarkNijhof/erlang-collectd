@@ -1,10 +1,7 @@
 Erlang collectd application
----------------------------
+===========================
 
 You need a collectd configured to accept network connections.
-
-Now with a custom ejabberd module.
-
 
 Graphing
 ---------
@@ -18,3 +15,8 @@ Graphing
 	rrdtool graph /tmp/users.png --lazy --imgformat PNG --end now --start end-200s --width 1200 \
 	DEF:ds1=users-ejabberd.rrd:users:AVERAGE \
 	LINE1:ds1#0000FF:"Online users" 
+
+Ejabberd
+--------
+
+A module and a patch to log ejabberd activity.
