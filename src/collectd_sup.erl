@@ -17,12 +17,9 @@ start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 add_server(Interval, Host, Port) when is_list(Host) ->
-    case inet:getaddr(Host, inet6) of
-	{ok, Addr} -> add_server(Interval, Addr, Port);
-	{error, _} -> case inet:getaddr(Host, inet) of
-			  {ok, Addr} -> add_server(Interval, Addr, Port);
-			  {error, Reason} -> {error, Reason}
-		      end
+    case inet:getaddr(Host, inet) of
+        {ok, Addr} -> add_server(Interval, Addr, Port);
+        {error, Reason} -> {error, Reason}
     end;
 add_server(Interval, Host, Port) ->
     supervisor:start_child(?SERVER,
