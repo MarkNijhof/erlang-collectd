@@ -123,7 +123,14 @@ code_change(_OldVsn, State, _Extra) ->
 send_packet(Sock, Host, Port, Interval, Values) ->
     {MS, S, _} = erlang:now(),
     Time = MS * 1000000 + S,
-    [Name, Hostname | _] = string:tokens(atom_to_list(node()), "@"),
+    [Name, Hostname] = case application:get_env(collectd, hostname) of
+        {ok, Hostname2} ->
+            [Name2, _ | _] = string:tokens(atom_to_list(node()), "@"),
+            [Name2, Hostname2];
+        _ ->
+            [Name2, Hostname2 | _] = string:tokens(atom_to_list(node()), "@"),
+            [Name2, Hostname2]
+    end,
     Parts = [collectd_pkt:pack_plugin("erlang"),
 	     collectd_pkt:pack_plugin_instance(Name)
 	     | lists:map(fun({type, Type}) ->
