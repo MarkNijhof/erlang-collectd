@@ -9,6 +9,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
+-define(CHUNK_SIZE, 500).
 -record(state, {sock, interval, host, port, values}).
 
 %%====================================================================
@@ -125,8 +126,8 @@ send_packet(Sock, Host, Port, Interval, Values) ->
     Time = MS * 1000000 + S,
     send_packet_1(Sock, Host, Port, Interval, Values, Time).
 
-send_packet_1(Sock, Host, Port, Interval, Values, Time) when length(Values) > 1000 ->
-    {Chunk, Rest} = lists:split(1000, Values),
+send_packet_1(Sock, Host, Port, Interval, Values, Time) when length(Values) > ?CHUNK_SIZE ->
+    {Chunk, Rest} = lists:split(?CHUNK_SIZE, Values),
     send_packet_1(Sock, Host, Port, Interval, Chunk, Time),
     send_packet_1(Sock, Host, Port, Interval, Rest, Time);
 
