@@ -126,12 +126,18 @@ send_packet(Sock, Host, Port, Interval, Values) ->
     Time = MS * 1000000 + S,
     send_packet_1(Sock, Host, Port, Interval, Values, Time).
 
-send_packet_1(Sock, Host, Port, Interval, Values, Time) when length(Values) > ?CHUNK_SIZE ->
-    {Chunk, Rest} = lists:split(?CHUNK_SIZE, Values),
-    send_packet_1(Sock, Host, Port, Interval, Chunk, Time),
-    send_packet_1(Sock, Host, Port, Interval, Rest, Time);
+send_packet_1(_, _, _, _, [], _) ->
+    ok;
+send_packet_1(Sock, Host, Port, Interval, [Bucket | Rest], Time) ->
+    send_bucket_packet(Sock, Host, Port, Interval, [Bucket], Time),
+    send_packet_1(Sock, Host, Port, Interval, Rest, Time).
 
-send_packet_1(Sock, Host, Port, Interval, Values, Time) ->
+send_bucket_packet(Sock, Host, Port, Interval, [{Bucket, Values}], Time) when length(Values) > ?CHUNK_SIZE ->
+    {Chunk, Rest} = lists:split(?CHUNK_SIZE, Values),
+    send_bucket_packet(Sock, Host, Port, Interval, [{Bucket, Chunk}], Time),
+    send_bucket_packet(Sock, Host, Port, Interval, [{Bucket, Rest}], Time);
+
+send_bucket_packet(Sock, Host, Port, Interval, Values, Time) ->
     [Name, Hostname] = case application:get_env(collectd, hostname) of
         {ok, Hostname2} ->
             [Name2, _ | _] = string:tokens(atom_to_list(node()), "@"),
