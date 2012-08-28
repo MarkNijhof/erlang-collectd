@@ -123,6 +123,14 @@ code_change(_OldVsn, State, _Extra) ->
 send_packet(Sock, Host, Port, Interval, Values) ->
     {MS, S, _} = erlang:now(),
     Time = MS * 1000000 + S,
+    send_packet_1(Sock, Host, Port, Interval, Values, Time).
+
+send_packet_1(Sock, Host, Port, Interval, Values, Time) when length(Values) > 1000 ->
+    {Chunk, Rest} = lists:split(1000, Values),
+    send_packet_1(Sock, Host, Port, Interval, Chunk, Time),
+    send_packet_1(Sock, Host, Port, Interval, Rest, Time);
+
+send_packet_1(Sock, Host, Port, Interval, Values, Time) ->
     [Name, Hostname] = case application:get_env(collectd, hostname) of
         {ok, Hostname2} ->
             [Name2, _ | _] = string:tokens(atom_to_list(node()), "@"),
@@ -131,6 +139,7 @@ send_packet(Sock, Host, Port, Interval, Values) ->
             [Name2, Hostname2 | _] = string:tokens(atom_to_list(node()), "@"),
             [Name2, Hostname2]
     end,
+
     Parts = [collectd_pkt:pack_plugin("erlang"),
 	     collectd_pkt:pack_plugin_instance(Name)
 	     | lists:map(fun({type, Type}) ->
@@ -143,8 +152,7 @@ send_packet(Sock, Host, Port, Interval, Values) ->
 				 collectd_pkt:pack_values(Values2)
 			 end, collectd_values:to_list(Values))],
     Pkt = collectd_pkt:pack(Hostname, Time, Interval, Parts),
-    ok = gen_udp:send(Sock, Host, Port, Pkt).
-
+    ok =  gen_udp:send(Sock, Host, Port, Pkt).
 
 timer(Pid, Timeout) ->
     gen_server:cast(Pid, timer),
