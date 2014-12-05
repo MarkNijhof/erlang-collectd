@@ -1,9 +1,19 @@
-ERL=erl
+PROJECT = collecd
 
-all: src
+include erlang.mk
 
-src: FORCE
-	@$(ERL) -pa ebin -make
+
+
+
+
+
+
+# ERL=erl
+
+# all: src
+
+# src: FORCE
+# 	@$(ERL) -pa ebin -make
 
 plt:
 	@dialyzer --build_plt --plt .plt -q -r .
@@ -11,7 +21,7 @@ plt:
 check: src
 	@dialyzer --check_plt --plt .plt -q -r .
 
-clean:
-	rm -f ebin/*.beam
+# clean:
+# 	rm -f ebin/*.beam
 
-FORCE:
+# FORCE:
