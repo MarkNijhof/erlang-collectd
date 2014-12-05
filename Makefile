@@ -1,4 +1,4 @@
-PROJECT = collecd
+PROJECT = collectd
 
 include erlang.mk
 
